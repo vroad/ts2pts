@@ -299,10 +299,10 @@ int write_pts(const char finame[],
     FILE *fi=fopen((const char*)finame, "rb");
     FILE *fo=fopen((const char*)foname, "wb");
     if(fo==NULL){
-        printf("write file open error\n");
+        fprintf(stderr, "write file open error\n");
         return -1;
     }
-    printf("converting TS: %s\n"
+    fprintf(stderr, "converting TS: %s\n"
            "to Partial TS: %s\n", finame, foname);
     unsigned int total = (unsigned int)(_filelengthi64(_fileno(fi))/TSPKT_SIZE);
 
@@ -413,9 +413,9 @@ int write_pts(const char finame[],
         }
         cnt++;
         if((cnt&0xffff)==0)
-            printf("%9d/%9d packets done\r", cnt, total);
+            fprintf(stderr, "%9d/%9d packets done\r", cnt, total);
     }
-    printf("%9d/%9d packets done\n", cnt, total);
+    fprintf(stderr, "%9d/%9d packets done\n", cnt, total);
     fclose(fi);
     fclose(fo);
     return 0;
@@ -651,7 +651,7 @@ int parse_NIT(unsigned char media_type[2],
                 memcpy(media_type, "TB", 2);
                 break;
             default:
-                printf("unknown broadcasting_identifier=%#x\n", broadcasting_identifier);
+                fprintf(stderr, "unknown broadcasting_identifier=%#x\n", broadcasting_identifier);
                 return -1;
             }
         }
@@ -687,7 +687,7 @@ int parse_TOT(TIME_t &now,
     pi+=3;
 
     if (hd.table_id!=0x73) {
-        printf("not TOT");
+        fprintf(stderr, "not TOT");
         return -1;
     }
 
@@ -839,27 +839,27 @@ int parse_PSI(PtsInfo_t &pts_info,
     switch (mode) {
     case 0: // PAT
         ret = parse_PAT(pts_info, pi, pgnum);
-        if(ret==0) printf("PAT:OK\n");
+        if(ret==0) fprintf(stderr, "PAT:OK\n");
         break;
     case 1: // PMT
         ret = parse_PMT(pts_info.pidout, pts_info.pmtdata, pi);
-        if(ret==0) printf("PMT:OK\n");
+        if(ret==0) fprintf(stderr, "PMT:OK\n");
         break;
     case 2: // NIT
         ret = parse_NIT(pts_info.media_type, pts_info.ts_info_d, pi);
-        if(ret==0) printf("NIT:OK\n");
+        if(ret==0) fprintf(stderr, "NIT:OK\n");
         break;
     case 3: // TOT
         ret = parse_TOT(pts_info.now, pi);
-        if(ret==0) printf("TOT:OK\n");
+        if(ret==0) fprintf(stderr, "TOT:OK\n");
         break;
     case 4: // EIT
         ret = parse_EIT(pts_info, pts_info.partial_ts_time_d, pi, pts_info.now, pts_info.service_id);
-        if(ret==0) printf("EIT:OK\n");
+        if(ret==0) fprintf(stderr, "EIT:OK\n");
         break;
     case 5: // SDT
         ret = parse_SDT(pts_info.service_d, pi, pts_info.service_id);
-        if(ret==0) printf("SDT:OK\n");
+        if(ret==0) fprintf(stderr, "SDT:OK\n");
         break;
     }
     return ret;
@@ -879,7 +879,7 @@ int analyze_ts(PtsInfo_t &pts_info,
 
     FILE *fi=fopen(finame, "rb");
     if (fi==NULL) {
-        printf("input file open error: %s\n", finame);
+        fprintf(stderr, "input file open error: %s\n", finame);
         return -1;
     }
     if (skipnum==-1) { // auto seting (start from center)
@@ -895,7 +895,7 @@ int analyze_ts(PtsInfo_t &pts_info,
         fseek(fi, skipnum*TSPKT_SIZE, SEEK_SET);
     }
 
-    printf("analyzing TS: %s\n", finame);
+    fprintf(stderr, "analyzing TS: %s\n", finame);
 
     // init.
     unsigned char tsbuf[TSPKT_SIZE];
@@ -981,7 +981,7 @@ int analyze_ts(PtsInfo_t &pts_info,
         }
     }
 
-    printf("not exist PAT/PMT/NIT/TOT/EIT/SDT\n");
+    fprintf(stderr, "not exist PAT/PMT/NIT/TOT/EIT/SDT\n");
 END_ANALYZE:
     fclose(fi);
     return mode>4 ? 0 : -1;
